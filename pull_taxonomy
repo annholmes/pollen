@@ -1,0 +1,25 @@
+#Sample code from HK for use with taxise package to pull higher level taxonomy given genus and species
+#Taxonomic data
+#fish changed to plants
+plants <- mutate(plants, species_name = paste(genus, species, sep = " "))#generate species name column
+
+#Fill in the family names
+genus <- as.vector(unique(plants$genus))
+num <- as.vector(1:length(genus))
+fam <- vector("character", length(genus))
+for(i in num){
+  t <- tax_name(query = genus[i], get = "family", db = "ncbi")
+  fam[i] <- print(t$family)
+}
+
+#find fmaily names using taxise seach of NCBI
+fam <- unlist(fam)
+temp <- data.frame(
+  fam,
+  genus)
+
+#create df with family and genus information
+plants <- full_join(plants, temp, by = "genus")#merge df with plants df by genus
+plants$family <- plants$fam#copy to family variable
+plants <- within(plants, rm("fam"))#remove redundant column
+save(plants, file = "data/Biology/plants.rda")#save plants.rda
